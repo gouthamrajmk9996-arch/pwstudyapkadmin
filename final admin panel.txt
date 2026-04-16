@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Lakshya — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f0f2f8;--surface:#fff;--surface2:#f7f8fc;--surface3:#eef0ff;
+  --text:#1a1a2e;--text2:#5f6580;--text3:#9ea3bd;
+  --border:rgba(0,0,0,.07);--border2:rgba(108,99,255,.2);
+  --pri:#6C63FF;--psoft:rgba(108,99,255,.08);--pmed:rgba(108,99,255,.16);
+  --grn:#10b981;--grn-s:rgba(16,185,129,.1);
+  --red:#ef4444;--red-s:rgba(239,68,68,.1);
+  --ylw:#f59e0b;--ylw-s:rgba(245,158,11,.1);
+  --blu:#3b82f6;
+  --grad:linear-gradient(135deg,#6C63FF,#06b6d4);
+  --grad2:linear-gradient(135deg,#f43f5e,#f59e0b);
+  --grad3:linear-gradient(135deg,#10b981,#06b6d4);
+  --sh-xs:0 1px 4px rgba(0,0,0,.05);
+  --sh-sm:0 2px 12px rgba(0,0,0,.08);
+  --sh-md:0 8px 28px rgba(0,0,0,.1);
+  --sh-lg:0 16px 48px rgba(0,0,0,.12);
+  --r:16px;--r-sm:12px;--r-xs:8px;
+}
+html,body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+.page{display:none;min-height:100vh}
+.page.active{display:block;animation:fadeIn .35s ease}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.9)}}
+@keyframes bellShake{0%,100%{transform:rotate(0)}20%{transform:rotate(15deg)}40%{transform:rotate(-12deg)}60%{transform:rotate(8deg)}80%{transform:rotate(-5deg)}}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}
+@keyframes modalIn{from{opacity:0;transform:scale(.88) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes slideInTop{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── SPINNER ── */
+.spin{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;flex-shrink:0}
+.spin-pri{border-color:var(--pmed);border-top-color:var(--pri)}
+.loader-spin{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--pri);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px}
+
+/* ── INPUTS ── */
+input,select,textarea{font-family:'Plus Jakarta Sans',sans-serif;width:100%;font-size:.9rem;color:var(--text);outline:none;transition:all .3s}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+
+/* ── LOGIN ── */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:40px 28px;width:100%;max-width:400px;text-align:center;box-shadow:var(--sh-lg);animation:scaleIn .5s ease}
+.login-logo{width:72px;height:72px;border-radius:20px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 22px;box-shadow:0 8px 26px rgba(108,99,255,.22)}
+.login-card h2{font-size:1.5rem;font-weight:800;margin-bottom:5px}
+.login-card .sub{color:var(--text2);font-size:.85rem;margin-bottom:28px;line-height:1.5}
+.field{margin-bottom:14px;text-align:left}
+.field label{display:block;font-size:.7rem;font-weight:700;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.7px}
+.fw{position:relative}
+.fw i.fi{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.88rem;pointer-events:none}
+.fw input,.fw select,.fw textarea{padding:13px 13px 13px 40px;background:var(--surface2);border:2px solid var(--border);border-radius:var(--r-sm)}
+.fw input[type="date"]{padding:13px 13px 13px 40px}
+.fw select{appearance:none;cursor:pointer}
+.fw textarea{padding:13px 13px 13px 40px;resize:vertical;min-height:85px}
+.fw input:focus,.fw select:focus,.fw textarea:focus{border-color:var(--pri);box-shadow:0 0 0 4px var(--psoft);background:#fff}
+.img-preview{margin-top:8px;border-radius:var(--r-sm);overflow:hidden;display:none;border:1px solid var(--border)}
+.img-preview img{width:100%;height:120px;object-fit:cover;display:block}
+.login-err{display:none;margin-top:12px;padding:10px;border-radius:var(--r-sm);font-size:.82rem;font-weight:600;text-align:center;background:var(--red-s);border:1px solid rgba(239,68,68,.18);color:var(--red)}
+.login-err.show{display:block;animation:shake .4s ease}
+
+/* ── BUTTONS ── */
+.btn{padding:13px 20px;border-radius:var(--r-sm);font-size:.88rem;font-weight:700;border:none;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;min-height:46px;touch-action:manipulation}
+.btn-pri{background:var(--grad);color:#fff;box-shadow:0 5px 16px rgba(108,99,255,.2);width:100%}
+.btn-pri:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(108,99,255,.28)}
+.btn-pri:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+.btn-grn{background:var(--grad3);color:#fff;box-shadow:0 5px 16px rgba(16,185,129,.2);width:100%}
+.btn-grn:hover{transform:translateY(-2px)}
+.btn-grn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+.btn-ghost{background:var(--surface2);border:1.5px solid var(--border);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--border2);color:var(--text)}
+.btn-danger{background:var(--red-s);border:1px solid rgba(239,68,68,.18);color:var(--red)}
+.btn-danger:hover{background:rgba(239,68,68,.14)}
+.btn-sm{padding:8px 14px;font-size:.76rem;min-height:36px;border-radius:var(--r-xs)}
+.btn-icon{width:36px;height:36px;border-radius:var(--r-xs);border:1px solid var(--border);background:var(--surface);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s;font-size:.82rem;text-decoration:none;flex-shrink:0}
+.btn-icon:hover{border-color:var(--border2);color:var(--pri)}
+.btn-icon.del{color:var(--red);border-color:rgba(239,68,68,.15);background:var(--red-s)}
+.btn-icon.del:hover{background:rgba(239,68,68,.15)}
+
+/* ── DASHBOARD LAYOUT ── */
+.dash-wrap{display:flex;flex-direction:column;min-height:100vh}
+/* TOPBAR */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--sh-xs)}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.ham-btn{width:40px;height:40px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;transition:all .25s;flex-shrink:0}
+.ham-btn:hover{border-color:var(--border2);color:var(--pri)}
+.topbar-brand{display:flex;align-items:center;gap:8px}
+.tb-logo{width:32px;height:32px;border-radius:9px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:.9rem}
+.tb-title{font-size:1rem;font-weight:800;letter-spacing:-.3px}
+.tb-title span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topbar-right{display:flex;align-items:center;gap:8px}
+/* Bell */
+.bell-wrap{position:relative}
+.bell-btn{width:38px;height:38px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s;font-size:.95rem}
+.bell-btn:hover{border-color:var(--border2);color:var(--pri)}
+.bell-btn.has-new{animation:bellShake 1s ease}
+.bell-dot{position:absolute;top:6px;right:6px;width:9px;height:9px;background:var(--red);border-radius:50%;border:2px solid #fff;display:none}
+.bell-dot.show{display:block}
+/* Bell dropdown */
+.bell-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:300px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh-lg);z-index:200;display:none;flex-direction:column;max-height:380px;overflow:hidden}
+.bell-dropdown.open{display:flex;animation:fadeIn .2s ease}
+.bd-header{padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.bd-header h3{font-size:.88rem;font-weight:700}
+.bd-clear{font-size:.72rem;color:var(--pri);font-weight:600;cursor:pointer;background:none;border:none;font-family:inherit}
+.bd-clear:hover{text-decoration:underline}
+.bd-list{overflow-y:auto;flex:1;padding:8px}
+.bd-item{padding:10px 12px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface2);margin-bottom:6px;animation:slideInTop .3s ease}
+.bd-item .bd-msg{font-size:.8rem;font-weight:600;margin-bottom:3px;line-height:1.4}
+.bd-item .bd-time{font-size:.65rem;color:var(--text3)}
+.bd-empty{padding:24px;text-align:center;color:var(--text3);font-size:.82rem}
+
+/* ── DRAWER (mobile nav) ── */
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90}
+.drawer-overlay.show{display:block;animation:overlayIn .25s ease}
+.drawer{position:fixed;top:0;left:0;height:100vh;width:260px;background:var(--surface);z-index:91;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:var(--sh-lg);display:flex;flex-direction:column;overflow:hidden}
+.drawer.open{transform:translateX(0)}
+.drawer-header{padding:18px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.drawer-logo{display:flex;align-items:center;gap:9px}
+.drawer-logo .dlm{width:32px;height:32px;border-radius:9px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:.9rem}
+.drawer-logo span{font-size:.95rem;font-weight:800}
+.drawer-close{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.82rem}
+.drawer-nav{flex:1;overflow-y:auto;padding:10px}
+.nav-section-lbl{font-size:.64rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;padding:10px 10px 5px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--r-sm);cursor:pointer;transition:all .22s;color:var(--text2);font-size:.86rem;font-weight:600;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:inherit;min-height:46px}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--psoft);color:var(--pri)}
+.nav-item i{width:18px;text-align:center;font-size:.94rem}
+.nav-item .n-badge{margin-left:auto;min-width:20px;height:20px;border-radius:10px;background:var(--red);color:#fff;font-size:.6rem;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px}
+.drawer-footer{padding:14px 16px;border-top:1px solid var(--border)}
+.btn-logout{width:100%;padding:11px;border-radius:var(--r-sm);background:var(--red-s);border:1px solid rgba(239,68,68,.15);color:var(--red);font-size:.84rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .25s;min-height:44px}
+.btn-logout:hover{background:rgba(239,68,68,.15)}
+
+/* ── CONTENT AREA ── */
+.content-wrap{flex:1;padding:16px}
+.section{display:none}
+.section.active{display:block;animation:fadeIn .3s ease}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px;box-shadow:var(--sh-xs);animation:slideUp .3s ease}
+.card h3{font-size:.95rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h3 i{color:var(--pri)}
+
+/* ── STATS GRID ── */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+@media(min-width:540px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--sh-xs);position:relative;overflow:hidden}
+.stat-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-box:nth-child(1)::before{background:var(--grad)}
+.stat-box:nth-child(2)::before{background:var(--grad3)}
+.stat-box:nth-child(3)::before{background:linear-gradient(135deg,#f59e0b,#f43f5e)}
+.stat-box:nth-child(4)::before{background:linear-gradient(135deg,#8b5cf6,#ec4899)}
+.stat-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;margin-bottom:10px}
+.si-p{background:var(--psoft);color:var(--pri)}.si-g{background:var(--grn-s);color:var(--grn)}
+.si-y{background:var(--ylw-s);color:var(--ylw)}.si-r{background:rgba(139,92,246,.1);color:#8b5cf6}
+.stat-num{font-size:1.5rem;font-weight:900;letter-spacing:-.4px}
+.stat-lbl{font-size:.7rem;color:var(--text2);margin-top:2px;font-weight:500}
+
+/* ── DB STATUS ── */
+.db-status-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.db-badge{display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:var(--r-xs);font-size:.72rem;font-weight:700;border:1px solid var(--border)}
+.db-badge .dbd{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.db-badge.online{background:var(--grn-s);border-color:rgba(16,185,129,.2);color:var(--grn)}
+.db-badge.online .dbd{background:var(--grn);animation:pulse 2s infinite}
+.db-badge.offline{background:var(--red-s);border-color:rgba(239,68,68,.18);color:var(--red)}
+.db-badge.offline .dbd{background:var(--red)}
+.db-badge.checking{background:var(--ylw-s);border-color:rgba(245,158,11,.18);color:var(--ylw)}
+.db-badge.checking .dbd{background:var(--ylw);animation:pulse 1s infinite}
+
+/* ── SEARCH ── */
+.search-wrap{position:relative;margin-bottom:12px}
+.search-wrap i{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.78rem;pointer-events:none}
+.search-inp{padding:10px 13px 10px 33px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.82rem;width:100%;color:var(--text);font-family:inherit;transition:all .3s}
+.search-inp:focus{border-color:var(--pri);background:#fff;outline:none}
+.search-inp::placeholder{color:var(--text3)}
+
+/* ── SEC HEAD ── */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap}
+.sec-head h4{font-size:.9rem;font-weight:700;display:flex;align-items:center;gap:7px}
+.cnt-badge{font-size:.68rem;background:var(--psoft);color:var(--pri);padding:3px 10px;border-radius:20px;font-weight:700}
+
+/* ── LIST ROWS ── */
+.l-row{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;transition:border-color .22s;animation:slideUp .3s ease both}
+.l-row:hover{border-color:var(--border2)}
+.l-thumb{width:72px;height:48px;border-radius:var(--r-xs);background:var(--surface3);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.l-thumb img{width:100%;height:100%;object-fit:cover}
+.l-thumb .nt{color:var(--text3);font-size:1rem}
+.l-info{flex:1;min-width:0}
+.l-title{font-size:.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.l-sub{font-size:.68rem;color:var(--text2);margin-top:2px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.l-date{font-size:.62rem;color:var(--text3);margin-top:2px}
+.l-badge{padding:2px 7px;border-radius:5px;font-size:.6rem;font-weight:700;color:#fff}
+.lb-phy{background:rgba(108,99,255,.8)}.lb-mat{background:rgba(16,185,129,.8)}
+.lb-pc{background:rgba(239,68,68,.8)}.lb-oc{background:rgba(245,158,11,.8);color:#333}
+.lb-ic{background:rgba(6,182,212,.8)}.lb-db1{background:rgba(16,185,129,.7)}.lb-db2{background:rgba(139,92,246,.7)}
+.l-actions{display:flex;gap:6px;flex-shrink:0}
+
+/* ── CODE ROWS ── */
+.c-row{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;animation:slideUp .3s ease both}
+.c-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.c-dot{width:34px;height:34px;border-radius:var(--r-xs);display:flex;align-items:center;justify-content:center;font-size:.88rem;flex-shrink:0}
+.cd-paid{background:var(--grn-s);color:var(--grn)}.cd-access{background:var(--ylw-s);color:var(--ylw)}.cd-subj{background:var(--psoft);color:var(--pri)}
+.c-val{font-family:'Courier New',monospace;font-size:.85rem;font-weight:700;letter-spacing:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-meta{font-size:.66rem;color:var(--text2);margin-top:2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.c-type{padding:2px 7px;border-radius:5px;font-size:.6rem;font-weight:700}
+.ct-paid{background:var(--grn-s);color:var(--grn)}.ct-access{background:var(--ylw-s);color:var(--ylw)}.ct-subj{background:var(--psoft);color:var(--pri)}
+.c-right{display:flex;gap:6px;flex-shrink:0}
+
+/* ── NOTIFICATION ITEMS ── */
+.notif-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:13px;margin-bottom:8px;animation:slideUp .3s ease both}
+.ni-msg{font-size:.84rem;font-weight:600;margin-bottom:6px;line-height:1.45}
+.ni-meta{font-size:.68rem;color:var(--text3);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ni-exp{color:var(--ylw);font-weight:600}
+
+/* ── BREAKDOWN BARS ── */
+.breakdown-item{margin-bottom:12px}
+.breakdown-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;font-size:.82rem}
+.breakdown-row span:first-child{font-weight:600}
+.breakdown-row span:last-child{color:var(--text2)}
+.bar-bg{width:100%;height:7px;background:var(--surface3);border-radius:10px;overflow:hidden}
+.bar-fill{height:100%;border-radius:10px;background:var(--grad);transition:width .5s}
+
+/* ── EMPTY / LOADING ── */
+.empty-box{text-align:center;padding:36px 20px;color:var(--text2)}
+.empty-box i{font-size:2rem;opacity:.14;margin-bottom:10px;display:block}
+.loading-row{text-align:center;padding:28px}
+
+/* ── NOTIFICATION MODAL (admin) ── */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(15,15,35,.5);backdrop-filter:blur(5px);align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex;animation:overlayIn .3s ease}
+body.modal-open{overflow:hidden}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:26px;max-width:380px;width:100%;text-align:center;animation:modalIn .36s cubic-bezier(.34,1.2,.64,1);box-shadow:var(--sh-lg)}
+.modal-box h3{font-size:1.1rem;margin-bottom:7px}
+.modal-box p{color:var(--text2);font-size:.85rem;margin-bottom:20px}
+.modal-btns{display:flex;gap:10px}
+.modal-btns .btn{flex:1}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);padding:12px 22px;border-radius:13px;font-size:.84rem;font-weight:600;z-index:9999;transition:all .4s cubic-bezier(.34,1.56,.64,1);max-width:90%;text-align:center;background:var(--surface);box-shadow:var(--sh-md)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast-ok{border:1px solid rgba(16,185,129,.22);color:var(--grn)}
+.toast-err{border:1px solid rgba(239,68,68,.22);color:var(--red)}
+.toast-info{border:1px solid rgba(108,99,255,.22);color:var(--pri)}
+
+/* ── FORM ROW ── */
+.form-row{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:540px){.form-row{grid-template-columns:1fr 1fr}}
+
+/* ── UTIL ── */
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}
+.info-note{font-size:.72rem;color:var(--text3);margin-top:8px;display:flex;align-items:center;gap:5px;line-height:1.45}
+.info-note i{color:var(--pri);flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- ── DRAWER OVERLAY ── -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+<!-- ── DRAWER ── -->
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <div class="drawer-logo"><div class="dlm">🎯</div><span>Lakshya</span></div>
+    <button class="drawer-close" onclick="closeDrawer()"><i class="fas fa-times"></i></button>
+  </div>
+  <nav class="drawer-nav">
+    <div class="nav-section-lbl">Main</div>
+    <button class="nav-item active" onclick="showSection('overview',this)"><i class="fas fa-home"></i> Overview</button>
+    <button class="nav-item" onclick="showSection('lectures',this)"><i class="fas fa-video"></i> Lectures</button>
+    <button class="nav-item" onclick="showSection('codes',this)"><i class="fas fa-key"></i> Access Codes</button>
+    <div class="nav-section-lbl">Communication</div>
+    <button class="nav-item" onclick="showSection('notifications',this)">
+      <i class="fas fa-bell"></i> Notifications
+      <span class="n-badge" id="navNotifBadge" style="display:none">0</span>
+    </button>
+    <div class="nav-section-lbl">System</div>
+    <button class="nav-item" onclick="showSection('databases',this)"><i class="fas fa-database"></i> DB Status</button>
+  </nav>
+  <div class="drawer-footer"><button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button></div>
+</div>
+
+<!-- ── DELETE CONFIRM MODAL ── -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <h3>⚠️ Confirm</h3>
+    <p id="confirmText">Are you sure?</p>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="doConfirm()"><i class="fas fa-trash"></i> Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ LOGIN ════ -->
+<div class="page active" id="loginPage">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">🎯</div>
+      <h2>Management Portal</h2>
+      <p class="sub">Enter your credentials to continue.</p>
+      <div class="field">
+        <label>Password</label>
+        <div class="fw"><i class="fas fa-lock fi"></i>
+          <input type="password" id="adminPass" placeholder="Enter password" autocomplete="off">
+        </div>
+      </div>
+      <button class="btn btn-pri" onclick="doLogin()"><i class="fas fa-arrow-right"></i> Continue</button>
+      <div class="login-err" id="loginErr">Invalid password. Please try again.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ DASHBOARD ════ -->
+<div class="page" id="dashPage">
+  <div class="dash-wrap">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="ham-btn" onclick="openDrawer()"><i class="fas fa-bars"></i></button>
+        <div class="topbar-brand">
+          <div class="tb-logo">🎯</div>
+          <div class="tb-title"><span>Lakshya</span> Admin</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="bell-wrap">
+          <button class="bell-btn" id="bellBtn" onclick="toggleBell()">
+            <i class="fas fa-bell"></i>
+            <span class="bell-dot" id="bellDot"></span>
+          </button>
+          <div class="bell-dropdown" id="bellDropdown">
+            <div class="bd-header">
+              <h3>Notifications</h3>
+              <button class="bd-clear" onclick="clearAllNotifs()">Clear all</button>
+            </div>
+            <div class="bd-list" id="bellList"><div class="bd-empty">No notifications</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content-wrap">
+
+      <!-- OVERVIEW -->
+      <div class="section active" id="sec-overview">
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-box"><div class="stat-icon si-p"><i class="fas fa-video"></i></div><div class="stat-num" id="stLecs">—</div><div class="stat-lbl">Lectures</div></div>
+          <div class="stat-box"><div class="stat-icon si-g"><i class="fas fa-key"></i></div><div class="stat-num" id="stCodes">—</div><div class="stat-lbl">Codes</div></div>
+          <div class="stat-box"><div class="stat-icon si-y"><i class="fas fa-users"></i></div><div class="stat-num" id="stUsers">—</div><div class="stat-lbl">Users</div></div>
+          <div class="stat-box"><div class="stat-icon si-r"><i class="fas fa-bell"></i></div><div class="stat-num" id="stNotifs">—</div><div class="stat-lbl">Notifications</div></div>
+        </div>
+        <div class="card">
+          <h3><i class="fas fa-chart-bar"></i> Subject Breakdown</h3>
+          <div id="subBreakdown"><div class="loading-row"><div class="loader-spin"></div></div></div>
+        </div>
+        <div class="card">
+          <h3><i class="fas fa-clock"></i> Recently Uploaded</h3>
+          <div id="recentLecs"><div class="loading-row"><div class="loader-spin"></div></div></div>
+        </div>
+      </div>
+
+      <!-- LECTURES -->
+      <div class="section" id="sec-lectures">
+        <div class="card">
+          <h3><i class="fas fa-upload"></i> Upload Lecture</h3>
+          <div class="field">
+            <label>Lecture Title *</label>
+            <div class="fw"><i class="fas fa-heading fi"></i>
+              <input type="text" id="lecTitle" placeholder="e.g. Laws of Motion — Part 1">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label>Subject *</label>
+              <div class="fw"><i class="fas fa-book fi"></i>
+                <select id="lecSubject">
+                  <option value="">Select Subject</option>
+                  <option value="Physics">⚡ Physics</option>
+                  <option value="Maths">📐 Mathematics</option>
+                  <option value="Physical Chemistry">🧪 Physical Chemistry</option>
+                  <option value="Organic Chemistry">🧬 Organic Chemistry</option>
+                  <option value="Inorganic Chemistry">⚗️ Inorganic Chemistry</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label>Lecture Date</label>
+              <div class="fw"><i class="fas fa-calendar fi"></i>
+                <input type="date" id="lecDate">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>YouTube Link *</label>
+            <div class="fw"><i class="fab fa-youtube fi"></i>
+              <input type="url" id="lecLink" placeholder="https://youtube.com/watch?v=...">
+            </div>
+          </div>
+          <!-- OPTIONAL IMAGE URL FIELD -->
+          <div class="field">
+            <label>Lecture Image URL <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional — overrides YouTube thumbnail)</span></label>
+            <div class="fw"><i class="fas fa-image fi"></i>
+              <input type="url" id="lecImage" placeholder="https://example.com/image.jpg" oninput="previewImage()">
+            </div>
+            <div class="img-preview" id="imgPreview">
+              <img id="imgPreviewImg" src="" alt="Preview" onerror="previewFail()">
+            </div>
+          </div>
+          <div class="field">
+            <label>Target Database</label>
+            <div class="fw"><i class="fas fa-database fi"></i>
+              <select id="lecDb">
+                <option value="auto">Auto (Primary → Fallback)</option>
+                <option value="db1">Primary DB only</option>
+                <option value="db2">Secondary DB only</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-pri mt8" id="uploadBtn" onclick="uploadLecture()">
+            <i class="fas fa-upload"></i> Upload Lecture
+          </button>
+          <div class="info-note mt8"><i class="fas fa-info-circle"></i> Auto mode writes to Primary DB first; falls back to Secondary if it fails. Image URL is optional — leave blank to use YouTube thumbnail.</div>
+        </div>
+
+        <div class="card">
+          <div class="sec-head">
+            <h4><i class="fas fa-list" style="color:var(--pri)"></i> All Lectures <span class="cnt-badge" id="lecCnt">0</span></h4>
+            <button class="btn btn-ghost btn-sm" onclick="forceReload()"><i class="fas fa-sync-alt"></i> Reload</button>
+          </div>
+          <div class="search-wrap"><i class="fas fa-search"></i><input class="search-inp" type="text" id="lecSearch" placeholder="Search lectures..." oninput="renderLecs()"></div>
+          <div id="lecLoader" class="loading-row"><div class="loader-spin"></div></div>
+          <div id="lecsList"></div>
+        </div>
+      </div>
+
+      <!-- CODES -->
+      <div class="section" id="sec-codes">
+        <div class="card">
+          <h3><i class="fas fa-plus-circle"></i> Add Access Code</h3>
+          <div class="form-row">
+            <div class="field">
+              <label>Code *</label>
+              <div class="fw"><i class="fas fa-key fi"></i>
+                <input type="text" id="newCode" placeholder="e.g. LKS2027XYZ">
+              </div>
+            </div>
+            <div class="field">
+              <label>Code Type *</label>
+              <div class="fw"><i class="fas fa-tag fi"></i>
+                <select id="codeType">
+                  <option value="">Select Type</option>
+                  <option value="paid">💰 Paid (Full Access)</option>
+                  <option value="access">🔑 Entry Access Only</option>
+                  <option value="Physics">⚡ Physics Only</option>
+                  <option value="Maths">📐 Mathematics Only</option>
+                  <option value="Physical Chemistry">🧪 Physical Chemistry Only</option>
+                  <option value="Organic Chemistry">🧬 Organic Chemistry Only</option>
+                  <option value="Inorganic Chemistry">⚗️ Inorganic Chemistry Only</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-pri" id="addCodeBtn" onclick="addCode()"><i class="fas fa-plus"></i> Add Code</button>
+        </div>
+        <div class="card">
+          <div class="sec-head">
+            <h4><i class="fas fa-list" style="color:var(--pri)"></i> All Codes <span class="cnt-badge" id="codeCnt">0</span></h4>
+          </div>
+          <div class="search-wrap"><i class="fas fa-search"></i><input class="search-inp" type="text" id="codeSearch" placeholder="Search codes..." oninput="renderCodes()"></div>
+          <div id="codesList"></div>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div class="section" id="sec-notifications">
+        <div class="card">
+          <h3><i class="fas fa-paper-plane"></i> Send Announcement</h3>
+          <div class="field">
+            <label>Message *</label>
+            <div class="fw" style="position:relative">
+              <i class="fas fa-comment fi" style="top:18px;transform:none"></i>
+              <textarea id="notifMsg" placeholder="Type your important message here...&#10;e.g. New Physics lectures uploaded! Check them out."></textarea>
+            </div>
+          </div>
+          <div class="field">
+            <label>Expires After</label>
+            <div class="fw"><i class="fas fa-clock fi"></i>
+              <select id="notifExpiry">
+                <option value="24">24 Hours (default)</option>
+                <option value="48">48 Hours</option>
+                <option value="72">72 Hours</option>
+                <option value="168">7 Days</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-grn mt8" onclick="sendNotif()"><i class="fas fa-paper-plane"></i> Send to All Users</button>
+        </div>
+        <div class="card">
+          <div class="sec-head">
+            <h4><i class="fas fa-history" style="color:var(--pri)"></i> Sent Notifications <span class="cnt-badge" id="notifCnt">0</span></h4>
+            <button class="btn btn-ghost btn-sm" onclick="cleanExpired()"><i class="fas fa-broom"></i> Clean Expired</button>
+          </div>
+          <div id="notifList"></div>
+        </div>
+      </div>
+
+      <!-- DATABASES -->
+      <div class="section" id="sec-databases">
+        <div class="card">
+          <h3><i class="fas fa-database"></i> Database Status</h3>
+          <div class="db-status-row" id="dbStatusRow">
+            <div class="db-badge checking"><span class="dbd"></span> Primary DB — Checking...</div>
+            <div class="db-badge checking"><span class="dbd"></span> Secondary DB — Checking...</div>
+            <div class="db-badge checking"><span class="dbd"></span> Users DB — Checking...</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="checkAllDbs()"><i class="fas fa-sync-alt"></i> Re-check All</button>
+        </div>
+        <div class="card">
+          <h3><i class="fas fa-info-circle"></i> Architecture</h3>
+          <div style="font-size:.83rem;color:var(--text2);line-height:1.9">
+            <p><strong style="color:var(--text)">Primary DB:</strong> mediaforlancrs-default-rtdb</p>
+            <p><strong style="color:var(--text)">Secondary DB:</strong> ilabs-fc3ef-default-rtdb</p>
+            <p><strong style="color:var(--text)">Users DB:</strong> monexa-2009-default-rtdb</p>
+            <br>
+            <p>📌 Lectures go to Primary first, Secondary as fallback.</p>
+            <p>📌 User data, codes, progress and notifications are in Users DB only.</p>
+            <p>📌 No data is ever deleted automatically.</p>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- content-wrap -->
+  </div><!-- dash-wrap -->
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script>
+/* ════ FIREBASE ════ */
+function getOrCreateApp(name,url){const ex=firebase.apps.find(a=>a.name===name);if(ex)return ex;return firebase.initializeApp({databaseURL:url},name)}
+const app1=getOrCreateApp('adm_db1','https://mediaforlancrs-default-rtdb.firebaseio.com/');
+const app2=getOrCreateApp('adm_db2','https://ilabs-fc3ef-default-rtdb.firebaseio.com/');
+const appU=getOrCreateApp('adm_dbu','https://monexa-2009-default-rtdb.firebaseio.com/');
+const db1=firebase.database(app1),db2=firebase.database(app2),dbU=firebase.database(appU);
+
+/* ════ STATE ════ */
+const PASS='goutham';
+let allLectures=[],db1L={},db2L={},allCodes=[],allNotifs=[];
+let l1=null,l2=null,codesL=null,notifsL=null;
+let confirmCb=null,bellOpen=false;
+let lastSeenNotif=parseInt(localStorage.getItem('adm_notif_seen')||'0');
+
+/* ════ HELPERS ════ */
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function toast(msg,type='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className=`toast toast-${type} show`;clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),3500)}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function fmtDate(d){try{return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}catch{return String(d)}}
+function getYTId(url){if(!url)return null;const p=[/youtube\.com\/watch\?(?:.*&)?v=([^&#]{11})/,/youtu\.be\/([^#?]{11})/,/youtube\.com\/embed\/([^#?]{11})/];for(const r of p){const m=url.match(r);if(m)return m[1]}return null}
+function getThumb(l){if(l.lectureImage&&l.lectureImage.trim())return l.lectureImage.trim();const vid=getYTId(l.youtubeLink||'');return vid?`https://img.youtube.com/vi/${vid}/mqdefault.jpg`:''}
+function subBadge(s){const m={'Physics':'lb-phy','Maths':'lb-mat','Physical Chemistry':'lb-pc','Organic Chemistry':'lb-oc','Inorganic Chemistry':'lb-ic'};return m[s]||'lb-phy'}
+
+/* ════ DRAWER ════ */
+function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('drawerOverlay').classList.add('show')}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('drawerOverlay').classList.remove('show')}
+
+/* ════ SECTIONS ════ */
+function showSection(name,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el)el.classList.add('active');
+  closeDrawer();
+}
+
+/* ════ BELL ════ */
+function toggleBell(){
+  bellOpen=!bellOpen;
+  document.getElementById('bellDropdown').classList.toggle('open',bellOpen);
+  if(bellOpen){
+    lastSeenNotif=Date.now();
+    localStorage.setItem('adm_notif_seen',lastSeenNotif);
+    updateBell();
+  }
+}
+document.addEventListener('click',e=>{
+  if(!document.getElementById('bellBtn').contains(e.target)&&!document.getElementById('bellDropdown').contains(e.target)){
+    document.getElementById('bellDropdown').classList.remove('open');bellOpen=false;
+  }
+});
+
+function updateBell(){
+  const newOnes=allNotifs.filter(n=>(n.createdAt||0)>lastSeenNotif);
+  const dot=document.getElementById('bellDot'),btn=document.getElementById('bellBtn');
+  const badge=document.getElementById('navNotifBadge');
+  if(newOnes.length>0){dot.classList.add('show');btn.classList.add('has-new');setTimeout(()=>btn.classList.remove('has-new'),1000);badge.style.display='flex';badge.textContent=newOnes.length}
+  else{dot.classList.remove('show');badge.style.display='none'}
+  renderBellList();
+}
+
+function renderBellList(){
+  const el=document.getElementById('bellList');
+  if(!allNotifs.length){el.innerHTML='<div class="bd-empty">No notifications</div>';return}
+  el.innerHTML=allNotifs.slice(0,5).map(n=>{
+    const t=n.createdAt?new Date(n.createdAt).toLocaleString('en-IN',{dateStyle:'short',timeStyle:'short'}):'';
+    return`<div class="bd-item"><div class="bd-msg">${escHtml(n.message)}</div><div class="bd-time">${t}</div></div>`;
+  }).join('');
+}
+
+function clearAllNotifs(){
+  openModal('Delete ALL active notifications?',()=>{
+    const u={};allNotifs.forEach(n=>{u['notifications/'+n.id]=null});
+    dbU.ref().update(u).then(()=>toast('✅ All cleared')).catch(e=>toast('Error: '+e.code,'err'));
+  });
+}
+
+/* ════ MODAL ════ */
+function openModal(text,cb){document.getElementById('confirmText').textContent=text;document.getElementById('confirmModal').classList.add('open');document.body.classList.add('modal-open');confirmCb=cb}
+function closeModal(){document.getElementById('confirmModal').classList.remove('open');document.body.classList.remove('modal-open');confirmCb=null}
+function doConfirm(){if(confirmCb)confirmCb();closeModal()}
+
+/* ════ LOGIN ════ */
+document.getElementById('adminPass').addEventListener('keypress',e=>{if(e.key==='Enter')doLogin()});
+
+function doLogin(){
+  const pass=document.getElementById('adminPass').value;
+  if(pass===PASS){
+    localStorage.setItem('lk_adm_auth','1');
+    showPage('dashPage');initDash();toast('✅ Welcome!');
+  }else{document.getElementById('loginErr').classList.add('show')}
+}
+
+function doLogout(){
+  localStorage.removeItem('lk_adm_auth');
+  if(l1){db1.ref('lectures').off();l1=null}
+  if(l2){db2.ref('lectures').off();l2=null}
+  if(codesL){dbU.ref('codes').off();codesL=null}
+  if(notifsL){dbU.ref('notifications').off();notifsL=null}
+  showPage('loginPage');
+  document.getElementById('adminPass').value='';
+  document.getElementById('loginErr').classList.remove('show');
+}
+
+if(localStorage.getItem('lk_adm_auth')==='1'){showPage('dashPage');initDash()}
+
+/* ════ INIT ════ */
+function initDash(){showSection('overview',document.querySelector('.nav-item'));attachListeners();checkAllDbs()}
+
+/* ════ LECTURE LISTENERS ════ */
+function attachListeners(){
+  document.getElementById('lecLoader').style.display='block';
+  l1=db1.ref('lectures').on('value',snap=>{
+    db1L={};if(snap.exists())snap.forEach(c=>{db1L[c.key]={id:c.key,source:'db1',...c.val()}});
+    mergeLecs();
+  },err=>{console.error('[DB1]',err.code);mergeLecs()});
+  l2=db2.ref('lectures').on('value',snap=>{
+    db2L={};if(snap.exists())snap.forEach(c=>{if(!db1L[c.key])db2L[c.key]={id:c.key,source:'db2',...c.val()}});
+    mergeLecs();
+  },err=>{console.error('[DB2]',err.code);mergeLecs()});
+  codesL=dbU.ref('codes').on('value',snap=>{
+    allCodes=[];if(snap.exists())snap.forEach(c=>{allCodes.push({key:c.key,...c.val()})});
+    document.getElementById('codeCnt').textContent=allCodes.length;
+    document.getElementById('stCodes').textContent=allCodes.length;
+    renderCodes();
+  },err=>{console.error('[Codes]',err.code);toast('Cannot load codes','err')});
+  notifsL=dbU.ref('notifications').on('value',snap=>{
+    const now=Date.now();allNotifs=[];
+    if(snap.exists()){snap.forEach(c=>{const v=c.val();if(!v.expiresAt||v.expiresAt>now)allNotifs.push({id:c.key,...v})});
+      allNotifs.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));}
+    document.getElementById('notifCnt').textContent=allNotifs.length;
+    document.getElementById('stNotifs').textContent=allNotifs.length;
+    renderNotifList();updateBell();
+  },()=>{});
+  dbU.ref('users').once('value').then(s=>{document.getElementById('stUsers').textContent=s.exists()?s.numChildren():'0'}).catch(()=>{});
+}
+
+function mergeLecs(){
+  const combined=[...Object.values(db1L),...Object.values(db2L)];
+  combined.sort((a,b)=>new Date(b.addedAt||0)-new Date(a.addedAt||0));
+  allLectures=combined;
+  document.getElementById('lecLoader').style.display='none';
+  document.getElementById('lecCnt').textContent=allLectures.length;
+  document.getElementById('stLecs').textContent=allLectures.length;
+  renderLecs();renderBreakdown();renderRecentLecs();
+}
+
+function forceReload(){db1L={};db2L={};document.getElementById('lecLoader').style.display='block';attachListeners();toast('🔄 Reloading...','info')}
+
+/* ════ IMAGE PREVIEW ════ */
+function previewImage(){
+  const url=document.getElementById('lecImage').value.trim();
+  const prev=document.getElementById('imgPreview');
+  const img=document.getElementById('imgPreviewImg');
+  if(url){
+    img.src=url;prev.style.display='block';
+  }else{prev.style.display='none'}
+}
+function previewFail(){
+  document.getElementById('imgPreview').style.display='none';
+  toast('Image URL could not be loaded — will fallback to YouTube thumbnail','info');
+}
+
+/* ════ RENDER LECTURES ════ */
+function renderLecs(){
+  const el=document.getElementById('lecsList');
+  const q=(document.getElementById('lecSearch').value||'').toLowerCase();
+  let list=allLectures;
+  if(q)list=list.filter(l=>(l.title||'').toLowerCase().includes(q)||(l.subject||'').toLowerCase().includes(q));
+  if(!list.length){el.innerHTML=`<div class="empty-box"><i class="fas fa-video-slash"></i><p>${allLectures.length?'No matches':'No lectures yet'}</p></div>`;return}
+  el.innerHTML=list.map((l,i)=>{
+    const thumb=getThumb(l);
+    const bc=subBadge(l.subject||'');
+    const dt=l.customDate?fmtDate(l.customDate):(l.addedAt?fmtDate(l.addedAt):'');
+    const src=l.source==='db2'?'<span class="l-badge lb-db2">DB2</span>':'<span class="l-badge lb-db1">DB1</span>';
+    return`<div class="l-row" style="animation-delay:${Math.min(i*.025,.5)}s">
+      <div class="l-thumb">${thumb?`<img src="${thumb}" loading="lazy" alt="" onerror="this.parentNode.innerHTML='<span class=\\'nt\\'><i class=\\'fas fa-video\\'></i></span>'">`:'<span class="nt"><i class="fas fa-video"></i></span>'}</div>
+      <div class="l-info">
+        <div class="l-title">${escHtml(l.title||'Untitled')}</div>
+        <div class="l-sub"><span class="l-badge ${bc}">${l.subject||'—'}</span>${src}</div>
+        ${dt?`<div class="l-date">📅 ${dt}</div>`:''}
+      </div>
+      <div class="l-actions">
+        <a class="btn-icon" href="${escHtml(l.youtubeLink||'#')}" target="_blank" title="Watch"><i class="fab fa-youtube"></i></a>
+        <button class="btn-icon del" onclick="delLec('${l.id}','${l.source||'db1'}','${escHtml(l.title||'')}')" title="Delete"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ════ UPLOAD ════ */
+async function uploadLecture(){
+  const title=document.getElementById('lecTitle').value.trim();
+  const subj=document.getElementById('lecSubject').value;
+  const link=document.getElementById('lecLink').value.trim();
+  const date=document.getElementById('lecDate').value;
+  const img=document.getElementById('lecImage').value.trim();
+  const dbp=document.getElementById('lecDb').value;
+  const btn=document.getElementById('uploadBtn');
+  if(!title){toast('Enter a title','err');return}
+  if(!subj){toast('Select a subject','err');return}
+  if(!link){toast('Enter a YouTube link','err');return}
+  if(!link.includes('youtube.com')&&!link.includes('youtu.be')){toast('Invalid YouTube URL','err');return}
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span> Uploading...';
+  const payload={title,subject:subj,youtubeLink:link,customDate:date||new Date().toISOString().split('T')[0],addedAt:new Date().toISOString()};
+  if(img)payload.lectureImage=img; /* Only store if provided */
+  let ok=false,used='';
+  if(dbp==='db2'){try{await db2.ref('lectures').push({...payload,source:'db2'});ok=true;used='Secondary DB'}catch(e){toast('Secondary DB failed: '+e.code,'err')}}
+  else if(dbp==='db1'){try{await db1.ref('lectures').push({...payload,source:'db1'});ok=true;used='Primary DB'}catch(e){toast('Primary DB failed: '+e.code,'err')}}
+  else{try{await db1.ref('lectures').push({...payload,source:'db1'});ok=true;used='Primary DB'}catch(e1){toast('Primary failed, trying fallback...','info');try{await db2.ref('lectures').push({...payload,source:'db2'});ok=true;used='Secondary DB (fallback)'}catch(e2){toast('Both DBs failed: '+e2.code,'err')}}}
+  if(ok){
+    toast(`✅ Uploaded to ${used}!`);
+    document.getElementById('lecTitle').value='';document.getElementById('lecSubject').value='';
+    document.getElementById('lecLink').value='';document.getElementById('lecDate').value='';
+    document.getElementById('lecImage').value='';
+    document.getElementById('imgPreview').style.display='none';
+    logA('lecture_upload',{title,subject:subj,db:used});
+  }
+  btn.disabled=false;btn.innerHTML='<i class="fas fa-upload"></i> Upload Lecture';
+}
+
+function delLec(id,source,title){
+  openModal(`Delete "${title}"? This cannot be undone.`,async()=>{
+    try{
+      if(source==='db2')await db2.ref('lectures/'+id).remove();
+      else await db1.ref('lectures/'+id).remove();
+      toast('🗑️ Lecture deleted');
+    }catch(e){toast('Delete failed: '+e.code,'err')}
+  });
+}
+
+/* ════ CODES ════ */
+function renderCodes(){
+  const el=document.getElementById('codesList');
+  const q=(document.getElementById('codeSearch').value||'').toLowerCase();
+  let list=allCodes;
+  if(q)list=list.filter(c=>c.key.toLowerCase().includes(q)||(c.codeType||'').toLowerCase().includes(q));
+  if(!list.length){el.innerHTML=`<div class="empty-box"><i class="fas fa-key"></i><p>No codes yet</p></div>`;return}
+  el.innerHTML=list.map((c,i)=>{
+    const isPaid=c.codeType==='paid',isAcc=c.codeType==='access';
+    const dot=isPaid?'cd-paid':isAcc?'cd-access':'cd-subj';
+    const tag=isPaid?'ct-paid':isAcc?'ct-access':'ct-subj';
+    const icon=isPaid?'💰':isAcc?'🔑':'📚';
+    const lbl=isPaid?'Full Access':isAcc?'Entry Only':(c.codeType||'—');
+    const dt=c.createdAt?fmtDate(c.createdAt):'';
+    return`<div class="c-row" style="animation-delay:${Math.min(i*.02,.4)}s">
+      <div class="c-left">
+        <div class="c-dot ${dot}">${icon}</div>
+        <div style="min-width:0">
+          <div class="c-val">${escHtml(c.key)}</div>
+          <div class="c-meta"><span class="c-type ${tag}">${lbl}</span>${dt?'· '+dt:''}</div>
+        </div>
+      </div>
+      <div class="c-right">
+        <button class="btn-icon" onclick="cpCode('${escHtml(c.key)}')" title="Copy"><i class="fas fa-copy"></i></button>
+        <button class="btn-icon del" onclick="delCode('${escHtml(c.key)}')" title="Delete"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addCode(){
+  const code=document.getElementById('newCode').value.trim();
+  const type=document.getElementById('codeType').value;
+  const btn=document.getElementById('addCodeBtn');
+  if(!code){toast('Enter a code','err');return}
+  if(!type){toast('Select code type','err');return}
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>';
+  dbU.ref('codes/'+code).set({codeType:type,createdAt:new Date().toISOString(),active:true})
+    .then(()=>{toast('✅ Code added!');document.getElementById('newCode').value='';document.getElementById('codeType').value=''})
+    .catch(e=>toast('Error: '+e.code,'err'))
+    .finally(()=>{btn.disabled=false;btn.innerHTML='<i class="fas fa-plus"></i> Add Code'});
+}
+
+function delCode(key){openModal(`Delete code "${key}"?`,()=>{dbU.ref('codes/'+key).remove().then(()=>toast('🗑️ Deleted')).catch(e=>toast('Error: '+e.code,'err'))})}
+function cpCode(code){navigator.clipboard.writeText(code).then(()=>toast('📋 Copied: '+code)).catch(()=>toast('Copy failed','err'))}
+
+/* ════ NOTIFICATIONS ════ */
+function sendNotif(){
+  const msg=document.getElementById('notifMsg').value.trim();
+  const expHrs=parseInt(document.getElementById('notifExpiry').value)||24;
+  if(!msg){toast('Enter a message','err');return}
+  const now=Date.now();
+  dbU.ref('notifications').push({message:msg,createdAt:now,expiresAt:now+(expHrs*3600000),expiryHrs:expHrs,read:false})
+    .then(()=>{toast('✅ Notification sent!');document.getElementById('notifMsg').value='';logA('notif_sent',{msg:msg.slice(0,50)})})
+    .catch(e=>toast('Error: '+e.code,'err'));
+}
+
+function renderNotifList(){
+  const el=document.getElementById('notifList');
+  if(!allNotifs.length){el.innerHTML=`<div class="empty-box"><i class="fas fa-bell-slash"></i><p>No active notifications</p></div>`;return}
+  el.innerHTML=allNotifs.map((n,i)=>{
+    const cr=n.createdAt?new Date(n.createdAt).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}):'';
+    const ex=n.expiresAt?new Date(n.expiresAt).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}):'';
+    return`<div class="notif-item" style="animation-delay:${i*.03}s">
+      <div class="ni-msg">${escHtml(n.message)}</div>
+      <div class="ni-meta">
+        <span>📅 ${cr}</span>
+        <span class="ni-exp">⏰ Expires: ${ex}</span>
+        <button class="btn btn-danger btn-sm" onclick="delNotif('${n.id}')"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function delNotif(id){openModal('Delete this notification?',()=>{dbU.ref('notifications/'+id).remove().then(()=>toast('🗑️ Deleted')).catch(e=>toast('Error: '+e.code,'err'))})}
+
+function cleanExpired(){
+  const now=Date.now();
+  dbU.ref('notifications').once('value').then(snap=>{
+    if(!snap.exists()){toast('Nothing to clean','info');return}
+    const u={};snap.forEach(c=>{const v=c.val();if(v.expiresAt&&v.expiresAt<now)u['notifications/'+c.key]=null});
+    if(!Object.keys(u).length){toast('No expired notifications','info');return}
+    return dbU.ref().update(u);
+  }).then(()=>toast('✅ Cleaned!')).catch(e=>toast('Error: '+e.code,'err'));
+}
+
+/* ════ OVERVIEW WIDGETS ════ */
+function renderBreakdown(){
+  const el=document.getElementById('subBreakdown');
+  const subjects=['Physics','Maths','Physical Chemistry','Organic Chemistry','Inorganic Chemistry'];
+  const total=allLectures.length||1;
+  el.innerHTML=subjects.map(s=>{
+    const n=allLectures.filter(l=>l.subject===s).length;
+    const pct=Math.round((n/total)*100);
+    return`<div class="breakdown-item"><div class="breakdown-row"><span>${s}</span><span>${n} lectures</span></div><div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+}
+
+function renderRecentLecs(){
+  const el=document.getElementById('recentLecs');
+  const list=allLectures.slice(0,5);
+  if(!list.length){el.innerHTML=`<div class="empty-box"><i class="fas fa-video-slash"></i><p>No lectures yet</p></div>`;return}
+  el.innerHTML=list.map(l=>{
+    const thumb=getThumb(l);
+    const bc=subBadge(l.subject||'');
+    return`<div class="l-row">
+      <div class="l-thumb">${thumb?`<img src="${thumb}" loading="lazy" alt="">`:'<span class="nt"><i class="fas fa-video"></i></span>'}</div>
+      <div class="l-info"><div class="l-title">${escHtml(l.title||'Untitled')}</div><div class="l-sub"><span class="l-badge ${bc}">${l.subject||'—'}</span></div></div>
+      <a class="btn-icon" href="${escHtml(l.youtubeLink||'#')}" target="_blank"><i class="fab fa-youtube"></i></a>
+    </div>`;
+  }).join('');
+}
+
+/* ════ DB STATUS ════ */
+async function checkAllDbs(){
+  const el=document.getElementById('dbStatusRow');
+  el.innerHTML=`<div class="db-badge checking"><span class="dbd"></span> Primary — Checking...</div><div class="db-badge checking"><span class="dbd"></span> Secondary — Checking...</div><div class="db-badge checking"><span class="dbd"></span> Users DB — Checking...</div>`;
+  const check=(ref,lbl,idx)=>{const s=Date.now();ref.limitToFirst(1).once('value').then(()=>{const ms=Date.now()-s;updBadge(el,idx,'online',`${lbl} — Online (${ms}ms)`)}).catch(e=>{updBadge(el,idx,'offline',`${lbl} — Offline (${e.code})`)})};
+  check(db1.ref('lectures'),'Primary DB',0);
+  check(db2.ref('lectures'),'Secondary DB',1);
+  check(dbU.ref('codes'),'Users DB',2);
+}
+function updBadge(container,idx,cls,text){const badges=container.querySelectorAll('.db-badge');if(badges[idx]){badges[idx].className=`db-badge ${cls}`;badges[idx].innerHTML=`<span class="dbd"></span> ${text}`}}
+
+/* ════ ANALYTICS ════ */
+function logA(ev,data){dbU.ref('analytics').push({event:ev,data,timestamp:Date.now(),actor:'admin'}).catch(()=>{})}
+</script>
+</body>
+</html>
